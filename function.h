@@ -298,13 +298,16 @@ void check_key(Game_Info * game_info, Block_Info * block_info, UI_Info * ui_info
 }
 
 void drop_block(Game_Info * game_info, Block_Info * block_info, Map_Info * map_info, UI_Info * ui_info) {
-	int i, j;
+	int i;
+	int j;
 
-	if ((*game_info).crush_on&&check_crush((*block_info).bx, (*block_info).by + 1, (*block_info).b_rotation,(*block_info).b_type,map_info) == true) (*game_info).crush_on = 0; //밑이 비어있으면 crush flag 끔 
+	if ((*game_info).crush_on&&check_crush((*block_info).bx, (*block_info).by + 1, (*block_info).b_rotation,(*block_info).b_type,map_info) == true) 
+		(*game_info).crush_on = 0; //밑이 비어있으면 crush flag 끔 
 	if ((*game_info).crush_on&&check_crush((*block_info).bx, (*block_info).by + 1, (*block_info).b_rotation, (*block_info).b_type, map_info) == false) { //밑이 비어있지않고 crush flag가 켜저있으면 
 		for (i = 0; i < MAIN_Y; i++) { //현재 조작중인 블럭을 굳힘 
 			for (j = 0; j < MAIN_X; j++) {
-				if ((*map_info).main_org[i][j] == ACTIVE_BLOCK) (*map_info).main_org[i][j] = INACTIVE_BLOCK;
+				if ((*map_info).main_org[i][j] == ACTIVE_BLOCK) 
+					(*map_info).main_org[i][j] = INACTIVE_BLOCK;
 			}
 		}
 		(*game_info).crush_on = 0; //flag를 끔 
@@ -312,8 +315,10 @@ void drop_block(Game_Info * game_info, Block_Info * block_info, Map_Info * map_i
 		(*game_info).new_block_on = 1; //새로운 블럭생성 flag를 켬    
 		return; //함수 종료 
 	}
-	if (check_crush((*block_info).bx, (*block_info).by + 1, (*block_info).b_rotation, (*block_info).b_type, map_info) == true) move_block(DOWN,block_info,map_info); //밑이 비어있으면 밑으로 한칸 이동 
-	if (check_crush((*block_info).bx, (*block_info).by + 1, (*block_info).b_rotation, (*block_info).b_type, map_info) == false) (*game_info).crush_on++; //밑으로 이동이 안되면  crush flag를 켬
+	if (check_crush((*block_info).bx, (*block_info).by + 1, (*block_info).b_rotation, (*block_info).b_type, map_info) == true) 
+		move_block(DOWN,block_info,map_info); //밑이 비어있으면 밑으로 한칸 이동 
+	if (check_crush((*block_info).bx, (*block_info).by + 1, (*block_info).b_rotation, (*block_info).b_type, map_info) == false) 
+		(*game_info).crush_on++; //밑으로 이동이 안되면  crush flag를 켬
 
 	return;
 }
@@ -410,15 +415,18 @@ void move_block(int dir, Block_Info * block_info, Map_Info * map_info) { //블록�
 }
 
 void check_line(Game_Info * game_info, Map_Info * map_info, Block_Info * block_info, UI_Info * ui_info) {
-	int i, j, k, l;
-
+	int i;
+	int j; 
+	int k;
+	int l;
 	int block_amount; //한줄의 블록갯수를 저장하는 변수 
 	int combo = 0; //콤보갯수 저장하는 변수 지정및 초기화 
 
 	for (i = MAIN_Y - 2; i > 3;) { //i=MAIN_Y-2 : 밑쪽벽의 윗칸부터,  i>3 : 천장(3)아래까지 검사 
 		block_amount = 0; //블록갯수 저장 변수 초기화 
 		for (j = 1; j < MAIN_X - 1; j++) { //벽과 벽사이의 블록갯루를 셈 
-			if ((*map_info).main_org[i][j] > 0) block_amount++;
+			if ((*map_info).main_org[i][j] > 0) 
+				block_amount++;
 		}
 		if (block_amount == MAIN_X - 2) { //블록이 가득 찬 경우 
 			if ((*game_info).level_up_on == 0) { //레벨업상태가 아닌 경우에(레벨업이 되면 자동 줄삭제가 있음) 
@@ -428,29 +436,34 @@ void check_line(Game_Info * game_info, Map_Info * map_info, Block_Info * block_i
 			}
 			for (k = i; k > 1; k--) { //윗줄을 한칸씩 모두 내림(윗줄이 천장이 아닌 경우에만) 
 				for (l = 1; l < MAIN_X - 1; l++) {
-					if ((*map_info).main_org[k - 1][l] != CEILLING) (*map_info).main_org[k][l] = (*map_info).main_org[k - 1][l];
-					if ((*map_info).main_org[k - 1][l] == CEILLING) (*map_info).main_org[k][l] = EMPTY;
+					if ((*map_info).main_org[k - 1][l] != CEILLING) 
+						(*map_info).main_org[k][l] = (*map_info).main_org[k - 1][l];
+					if ((*map_info).main_org[k - 1][l] == CEILLING) 
+						(*map_info).main_org[k][l] = EMPTY;
 					//윗줄이 천장인 경우에는 천장을 한칸 내리면 안되니까 빈칸을 넣음 
 				}
 			}
 		}
 		else i--;
 	}
+
 	if (combo) { //줄 삭제가 있는 경우 점수와 레벨 목표를 새로 표시함  
 		if (combo > 1) { //2콤보이상인 경우 경우 보너스및 메세지를 게임판에 띄웠다가 지움 
-			gotoxy(MAIN_X_ADJ + (MAIN_X / 2) - 1, MAIN_Y_ADJ + (*block_info).by - 2); printf("%d COMBO!", combo);
+			gotoxy(MAIN_X_ADJ + (MAIN_X / 2) - 1, MAIN_Y_ADJ + (*block_info).by - 2);
+			printf("%d COMBO!", combo);
 			Sleep(500);
 			(*game_info).score += (combo*(*game_info).level * 100);
 			reset_main_cpy(map_info); //텍스트를 지우기 위해 main_cpy을 초기화.
 			//(main_cpy와 main_org가 전부 다르므로 다음번 draw()호출시 게임판 전체를 새로 그리게 됨) 
 		}
-		gotoxy(get_UI_Position_X(), (*ui_info).STATUS_Y_GOAL); printf(" GOAL  : %5d", ((*game_info).cnt <= 10) ? 10 - (*game_info).cnt : 0);
-		gotoxy(get_UI_Position_X(), (*ui_info).STATUS_Y_SCORE); printf("        %6d", (*game_info).score);
+		gotoxy(get_UI_Position_X(), (*ui_info).STATUS_Y_GOAL);
+			printf(" GOAL  : %5d", ((*game_info).cnt <= 10) ? 10 - (*game_info).cnt : 0);
+		gotoxy(get_UI_Position_X(), (*ui_info).STATUS_Y_SCORE);
+			printf("        %6d", (*game_info).score);
 	}
 
 	return;
 }
-
 void check_level_up(Game_Info * game_info, Map_Info * map_info, UI_Info * ui_info, Block_Info * block_info) {
 	int i, j;
 
