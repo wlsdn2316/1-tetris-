@@ -20,15 +20,62 @@ void pause(Game_Info * game_info, Map_Info * map_info, Block_Info * block_info, 
 void setcursortype(CURSOR_TYPE c);
 void gotoxy(int x, int y);
 
+CONSOLE_CURSOR_INFO setCurInfo(int size, BOOL flag); // 커서 정보를 받아서 저장하고 커서 객체를 리턴함
+void file_control(Game_Info * game_info, char * file_name, char * ch);
+void init_reset(Game_Info * game_info); //매 게임마다 초기화가 필요한 변수들을 초기화시킴
+
 int get_UI_Position_X(void) {//게임정보표시 위치조정 
 
 	return MAIN_X_ADJ + MAIN_X + 1;
 }
+void init_reset(Game_Info * game_info) {
+	(*game_info).level = 1; //각종변수 초기화 
+	(*game_info).score = 0;
+	(*game_info).level_goal = 1000;
+	(*game_info).key = 0;
+	(*game_info).crush_on = 0;
+	(*game_info).cnt = 0;
+	(*game_info).speed = 100;
+}
 
+void file_control(Game_Info * game_info, char * file_name, char * ch) { //file control함수로 읽기 저장하기 닫기 기능을 수행함.
+
+	if (ch == "rb") {
+		fopen_s(&(*game_info).file, file_name, ch);
+		if ((*game_info).file == 0) { (*game_info).best_score = 0; } //파일이 없으면 걍 최고점수에 0을 넣음 
+		else {
+			fscanf_s((*game_info).file, "%d", &(*game_info).best_score); // 파일이 열리면 최고점수를 불러옴 
+		}
+	}
+	else if (ch == "wb") {
+		fopen_s(&(*game_info).file, file_name, ch); //score.dat에 점수 저장                
+		if ((*game_info).file == NULL) {
+			gotoxy(0, 0);
+			printf("존재하지 않는 파일 입니다. \n");
+		}
+		fprintf((*game_info).file, "%d", (*game_info).score);
+
+	}
+
+	//모든 작업후엔 항상 close를 해야하므로 
+	if ((*game_info).file == NULL) {
+		printf("NULL 파일을 닫으려 하고있습니다.\n");
+		return;
+	}
+	fclose((*game_info).file); //파일 닫음	
+
+}
 
 void gotoxy(int x, int y) { //gotoxy함수 
 	COORD pos = { 2 * x,y };
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
+}
+
+CONSOLE_CURSOR_INFO setCurInfo(int size, BOOL flag) { // 커서 정보를 받아서 저장하고 커서 객체를 리턴함
+	CONSOLE_CURSOR_INFO CurInfo;
+	CurInfo.dwSize = size;
+	CurInfo.bVisible = flag;
+	return CurInfo;
 }
 
 void setcursortype(CURSOR_TYPE c) { //커서숨기는 함수 
