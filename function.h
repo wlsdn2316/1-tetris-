@@ -83,16 +83,13 @@ void setcursortype(CURSOR_TYPE c) { //커서숨기는 함수
 
 	switch (c) {
 	case NOCURSOR:
-		CurInfo.dwSize = 1;
-		CurInfo.bVisible = FALSE;
+		CurInfo = setCurInfo(1, FALSE);
 		break;
 	case SOLIDCURSOR:
-		CurInfo.dwSize = 100;
-		CurInfo.bVisible = TRUE;
+		CurInfo = setCurInfo(100, TRUE);
 		break;
 	case NORMALCURSOR:
-		CurInfo.dwSize = 20;
-		CurInfo.bVisible = TRUE;
+		CurInfo = setCurInfo(20, TRUE);
 		break;
 	}
 	SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &CurInfo);
@@ -137,21 +134,9 @@ void title(void) {
 
 void reset(Game_Info * game_info, Block_Info * block_info, UI_Info * ui_info, Map_Info * map_info) {
 
-	FILE *file;
-	fopen_s(&file, "score.dat", "rb"); // score.dat파일을 연결 
-	if (file == 0) { (*game_info).best_score = 0; } //파일이 없으면 걍 최고점수에 0을 넣음 
-	else {
-		fscanf_s(file, "%d", &(*game_info).best_score); // 파일이 열리면 최고점수를 불러옴 
-		fclose(file); //파일 닫음 
-	}
+	file_control(game_info, "score.dat", "rb"); //file control함수로 읽기 저장하기 닫기 기능을 수행함.
 
-	(*game_info).level = 1; //각종변수 초기화 
-	(*game_info).score = 0;
-	(*game_info).level_goal = 1000;
-	(*game_info).key = 0;
-	(*game_info).crush_on = 0;
-	(*game_info).cnt = 0;
-	(*game_info).speed = 100;
+	init_reset(game_info);	//매 게임마다 초기화가 필요한 변수들을 초기화시킴
 
 	system("cls"); //화면지움 
 	reset_main(map_info); // main_org를 초기화 
@@ -163,6 +148,7 @@ void reset(Game_Info * game_info, Block_Info * block_info, UI_Info * ui_info, Ma
 
 	return;
 }
+
 
 void reset_main(Map_Info   * map_info) { //게임판을 초기화  
 	int i, j;
@@ -606,25 +592,13 @@ void check_game_over(Game_Info * game_info, Map_Info * map_info, Block_Info * bl
 			(*game_info).last_score = (*game_info).score; //게임점수를 옮김 
 
 			if ((*game_info).score > (*game_info).best_score) { //최고기록 갱신시 
-				FILE* file;
-				fopen_s(&file, "score.dat", "wt"); //score.dat에 점수 저장                
-
+				file_control(game_info, "score.dat", "wb");
 				gotoxy(x, y + 6); printf("▤  ★★★ BEST SCORE! ★★★   ▤  ");
-
-				if (file == 0) { //파일 에러메세지  
-					gotoxy(0, 0);
-					printf("FILE ERROR: SYSTEM CANNOT WRITE BEST SCORE ON \"SCORE.DAT\"");
-				}
-				else {
-					fprintf(file, "%d", (*game_info).score);
-					fclose(file);
-				}
-
 			}
 			Sleep(1000);
 			while (_kbhit()) _getch();
 			(*game_info).key = _getch();
-			reset(game_info,block_info,ui_info,map_info);
+			reset(game_info, block_info, ui_info, map_info);
 		}
 	}
 	return;
