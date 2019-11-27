@@ -252,7 +252,7 @@ void draw_main(Map_Info * map_info) { //게임판 그리는 함수
 
 void new_block(Block_Info * block_info, Game_Info * game_info, Map_Info * map_info) { //새로운 블록 생성  
 	int i, j;
-	
+
 	(*block_info).bx = (MAIN_X / 2) - 1; //블록 생성 위치x좌표(게임판의 가운데) 
 	(*block_info).by = 0;  //블록 생성위치 y좌표(제일 위) 
 	(*block_info).b_type = (*block_info).b_type_next; //다음블럭값을 가져옴 
@@ -291,7 +291,7 @@ void check_key(Game_Info * game_info, Block_Info * block_info, UI_Info * ui_info
 			do { (*game_info).key = _getch(); } while ((*game_info).key == 224);//방향키지시값을 버림 
 			switch ((*game_info).key) {
 			case LEFT: //왼쪽키 눌렀을때  
-				if (check_crush((*block_info).bx - 1, (*block_info).by, (*block_info).b_rotation, (*block_info).b_type,map_info) == true) move_block(LEFT,block_info,map_info);
+				if (check_crush((*block_info).bx - 1, (*block_info).by, (*block_info).b_rotation, (*block_info).b_type, map_info) == true) move_block(LEFT, block_info, map_info);
 				break;                            //왼쪽으로 갈 수 있는지 체크 후 가능하면 이동
 			case RIGHT: //오른쪽 방향키 눌렀을때- 위와 동일하게 처리됨 
 				if (check_crush((*block_info).bx + 1, (*block_info).by, (*block_info).b_rotation, (*block_info).b_type, map_info) == true) move_block(RIGHT, block_info, map_info);
@@ -310,14 +310,14 @@ void check_key(Game_Info * game_info, Block_Info * block_info, UI_Info * ui_info
 			case SPACE: //스페이스키 눌렀을때 
 				(*game_info).space_key_on = 1; //스페이스키 flag를 띄움 
 				while ((*game_info).crush_on == 0) { //바닥에 닿을때까지 이동시킴 
-					drop_block(game_info,block_info,map_info,ui_info);
+					drop_block(game_info, block_info, map_info, ui_info);
 					(*game_info).score += (*game_info).level; // hard drop 보너스
 					gotoxy(get_UI_Position_X(), (*ui_info).STATUS_Y_SCORE); printf("        %6d", (*game_info).score); //점수 표시  
 				}
 				break;
 			case P: //P(대문자) 눌렀을때 
 			case p: //p(소문자) 눌렀을때 
-				pause(game_info,map_info,block_info,ui_info); //일시정지 
+				pause(game_info, map_info, block_info, ui_info); //일시정지 
 				break;
 			case ESC: //ESC눌렀을때 
 				system("cls"); //화면을 지우고 
@@ -334,23 +334,23 @@ void drop_block(Game_Info * game_info, Block_Info * block_info, Map_Info * map_i
 	int i;
 	int j;
 
-	if ((*game_info).crush_on&&check_crush((*block_info).bx, (*block_info).by + 1, (*block_info).b_rotation,(*block_info).b_type,map_info) == true) 
+	if ((*game_info).crush_on&&check_crush((*block_info).bx, (*block_info).by + 1, (*block_info).b_rotation, (*block_info).b_type, map_info) == true)
 		(*game_info).crush_on = 0; //밑이 비어있으면 crush flag 끔 
 	if ((*game_info).crush_on&&check_crush((*block_info).bx, (*block_info).by + 1, (*block_info).b_rotation, (*block_info).b_type, map_info) == false) { //밑이 비어있지않고 crush flag가 켜저있으면 
 		for (i = 0; i < MAIN_Y; i++) { //현재 조작중인 블럭을 굳힘 
 			for (j = 0; j < MAIN_X; j++) {
-				if ((*map_info).main_org[i][j] == ACTIVE_BLOCK) 
+				if ((*map_info).main_org[i][j] == ACTIVE_BLOCK)
 					(*map_info).main_org[i][j] = INACTIVE_BLOCK;
 			}
 		}
 		(*game_info).crush_on = 0; //flag를 끔 
-		check_line(game_info, map_info,block_info,ui_info); //라인체크를 함 
+		check_line(game_info, map_info, block_info, ui_info); //라인체크를 함 
 		(*game_info).new_block_on = 1; //새로운 블럭생성 flag를 켬    
 		return; //함수 종료 
 	}
-	if (check_crush((*block_info).bx, (*block_info).by + 1, (*block_info).b_rotation, (*block_info).b_type, map_info) == true) 
-		move_block(DOWN,block_info,map_info); //밑이 비어있으면 밑으로 한칸 이동 
-	if (check_crush((*block_info).bx, (*block_info).by + 1, (*block_info).b_rotation, (*block_info).b_type, map_info) == false) 
+	if (check_crush((*block_info).bx, (*block_info).by + 1, (*block_info).b_rotation, (*block_info).b_type, map_info) == true)
+		move_block(DOWN, block_info, map_info); //밑이 비어있으면 밑으로 한칸 이동 
+	if (check_crush((*block_info).bx, (*block_info).by + 1, (*block_info).b_rotation, (*block_info).b_type, map_info) == false)
 		(*game_info).crush_on++; //밑으로 이동이 안되면  crush flag를 켬
 
 	return;
@@ -361,25 +361,33 @@ int check_crush(int bx, int by, int b_rotation, int bType, Map_Info * map_info) 
 
 	for (i = 0; i < 4; i++) {
 		for (j = 0; j < 4; j++) { //지정된 위치의 게임판과 블럭모양을 비교해서 겹치면 false를 리턴 
-			if (blocks[bType][b_rotation][i][j] == 1 && (* map_info).main_org[by + i][bx + j] > 0) return false;
+			if (blocks[bType][b_rotation][i][j] == 1 && (*map_info).main_org[by + i][bx + j] > 0) return false;
 		}
 	}
 	return true; //하나도 안겹치면 true리턴 
 }
 
 void move_block(int dir, Block_Info * block_info, Map_Info * map_info) { //블록을 이동시킴 
+	
 	int i, j;
+
+	int b_type = (*block_info).b_type;
+	int b_rotation = (*block_info).b_rotation;
+	int by = (*block_info).by;
+	int bx = (*block_info).bx;
 
 	switch (dir) {
 	case LEFT: //왼쪽방향 
 		for (i = 0; i < 4; i++) { //현재좌표의 블럭을 지움 
 			for (j = 0; j < 4; j++) {
-				if (blocks[(*block_info).b_type][(*block_info).b_rotation][i][j] == 1) (*map_info).main_org[(*block_info).by + i][(*block_info).bx + j] = EMPTY;
+				if (blocks[b_type][b_rotation][i][j] == 1) // ★ blckos[b_type][b_rotation][i][j] == 1 일때는 테트리스 블록이 있을 때이다.
+					(*map_info).main_org[by + i][bx + j] = EMPTY;
 			}
 		}
 		for (i = 0; i < 4; i++) { //왼쪽으로 한칸가서 active block을 찍음 
 			for (j = 0; j < 4; j++) {
-				if (blocks[(*block_info).b_type][(*block_info).b_rotation][i][j] == 1) (*map_info).main_org[(*block_info).by + i][(*block_info).bx + j - 1] = ACTIVE_BLOCK;
+				if (blocks[b_type][b_rotation][i][j] == 1)
+					(*map_info).main_org[by + i][bx + j - 1] = ACTIVE_BLOCK;
 			}
 		}
 		(*block_info).bx--; //좌표값 이동 
@@ -388,12 +396,14 @@ void move_block(int dir, Block_Info * block_info, Map_Info * map_info) { //블록�
 	case RIGHT:    //오른쪽 방향. 왼쪽방향이랑 같은 원리로 동작 
 		for (i = 0; i < 4; i++) {
 			for (j = 0; j < 4; j++) {
-				if (blocks[(*block_info).b_type][(*block_info).b_rotation][i][j] == 1) (*map_info).main_org[(*block_info).by + i][(*block_info).bx + j] = EMPTY;
+				if (blocks[b_type][b_rotation][i][j] == 1)
+					(*map_info).main_org[by + i][bx + j] = EMPTY;
 			}
 		}
 		for (i = 0; i < 4; i++) {
 			for (j = 0; j < 4; j++) {
-				if (blocks[(*block_info).b_type][(*block_info).b_rotation][i][j] == 1) (*map_info).main_org[(*block_info).by + i][(*block_info).bx + j + 1] = ACTIVE_BLOCK;
+				if (blocks[b_type][b_rotation][i][j] == 1)
+					(*map_info).main_org[by + i][bx + j + 1] = ACTIVE_BLOCK;
 			}
 		}
 		(*block_info).bx++;
@@ -402,12 +412,14 @@ void move_block(int dir, Block_Info * block_info, Map_Info * map_info) { //블록�
 	case DOWN:    //아래쪽 방향. 왼쪽방향이랑 같은 원리로 동작
 		for (i = 0; i < 4; i++) {
 			for (j = 0; j < 4; j++) {
-				if (blocks[(*block_info).b_type][(*block_info).b_rotation][i][j] == 1) (*map_info).main_org[(*block_info).by + i][(*block_info).bx + j] = EMPTY;
+				if (blocks[b_type][b_rotation][i][j] == 1)
+					(*map_info).main_org[by + i][bx + j] = EMPTY;
 			}
 		}
 		for (i = 0; i < 4; i++) {
 			for (j = 0; j < 4; j++) {
-				if (blocks[(*block_info).b_type][(*block_info).b_rotation][i][j] == 1) (*map_info).main_org[(*block_info).by + i + 1][(*block_info).bx + j] = ACTIVE_BLOCK;
+				if (blocks[b_type][b_rotation][i][j] == 1)
+					(*map_info).main_org[by + i + 1][bx + j] = ACTIVE_BLOCK;
 			}
 		}
 		(*block_info).by++;
@@ -416,13 +428,16 @@ void move_block(int dir, Block_Info * block_info, Map_Info * map_info) { //블록�
 	case UP: //키보드 위쪽 눌렀을때 회전시킴. 
 		for (i = 0; i < 4; i++) { //현재좌표의 블럭을 지움  
 			for (j = 0; j < 4; j++) {
-				if (blocks[(*block_info).b_type][(*block_info).b_rotation][i][j] == 1) (*map_info).main_org[(*block_info).by + i][(*block_info).bx + j] = EMPTY;
+				if (blocks[b_type][b_rotation][i][j] == 1)
+					(*map_info).main_org[by + i][bx + j] = EMPTY;
 			}
 		}
 		(*block_info).b_rotation = ((*block_info).b_rotation + 1) % 4; //회전값을 1증가시킴(3에서 4가 되는 경우는 0으로 되돌림) 
+
 		for (i = 0; i < 4; i++) { //회전된 블록을 찍음 
 			for (j = 0; j < 4; j++) {
-				if (blocks[(*block_info).b_type][(*block_info).b_rotation][i][j] == 1) (*map_info).main_org[(*block_info).by + i][(*block_info).bx + j] = ACTIVE_BLOCK;
+				if (blocks[b_type][(*block_info).b_rotation][i][j] == 1)
+					(*map_info).main_org[by + i][bx + j] = ACTIVE_BLOCK;
 			}
 		}
 		break;
@@ -431,13 +446,16 @@ void move_block(int dir, Block_Info * block_info, Map_Info * map_info) { //블록�
 			  //이를 동작시키는 특수동작 
 		for (i = 0; i < 4; i++) {
 			for (j = 0; j < 4; j++) {
-				if (blocks[(*block_info).b_type][(*block_info).b_rotation][i][j] == 1) (*map_info).main_org[(*block_info).by + i][(*block_info).bx + j] = EMPTY;
+				if (blocks[b_type][b_rotation][i][j] == 1)
+					(*map_info).main_org[by + i][bx + j] = EMPTY;
 			}
 		}
 		(*block_info).b_rotation = ((*block_info).b_rotation + 1) % 4;
+
 		for (i = 0; i < 4; i++) {
 			for (j = 0; j < 4; j++) {
-				if (blocks[(*block_info).b_type][(*block_info).b_rotation][i][j] == 1) (*map_info).main_org[(*block_info).by + i - 1][(*block_info).bx + j] = ACTIVE_BLOCK;
+				if (blocks[b_type][(*block_info).b_rotation][i][j] == 1)
+					(*map_info).main_org[by + i - 1][bx + j] = ACTIVE_BLOCK;
 			}
 		}
 		(*block_info).by--;
@@ -449,7 +467,7 @@ void move_block(int dir, Block_Info * block_info, Map_Info * map_info) { //블록�
 
 void check_line(Game_Info * game_info, Map_Info * map_info, Block_Info * block_info, UI_Info * ui_info) {
 	int i;
-	int j; 
+	int j;
 	int k;
 	int l;
 	int block_amount; //한줄의 블록갯수를 저장하는 변수 
@@ -458,7 +476,7 @@ void check_line(Game_Info * game_info, Map_Info * map_info, Block_Info * block_i
 	for (i = MAIN_Y - 2; i > 3;) { //i=MAIN_Y-2 : 밑쪽벽의 윗칸부터,  i>3 : 천장(3)아래까지 검사 
 		block_amount = 0; //블록갯수 저장 변수 초기화 
 		for (j = 1; j < MAIN_X - 1; j++) { //벽과 벽사이의 블록갯루를 셈 
-			if ((*map_info).main_org[i][j] > 0) 
+			if ((*map_info).main_org[i][j] > 0)
 				block_amount++;
 		}
 		if (block_amount == MAIN_X - 2) { //블록이 가득 찬 경우 
@@ -469,9 +487,9 @@ void check_line(Game_Info * game_info, Map_Info * map_info, Block_Info * block_i
 			}
 			for (k = i; k > 1; k--) { //윗줄을 한칸씩 모두 내림(윗줄이 천장이 아닌 경우에만) 
 				for (l = 1; l < MAIN_X - 1; l++) {
-					if ((*map_info).main_org[k - 1][l] != CEILLING) 
+					if ((*map_info).main_org[k - 1][l] != CEILLING)
 						(*map_info).main_org[k][l] = (*map_info).main_org[k - 1][l];
-					if ((*map_info).main_org[k - 1][l] == CEILLING) 
+					if ((*map_info).main_org[k - 1][l] == CEILLING)
 						(*map_info).main_org[k][l] = EMPTY;
 					//윗줄이 천장인 경우에는 천장을 한칸 내리면 안되니까 빈칸을 넣음 
 				}
@@ -490,9 +508,9 @@ void check_line(Game_Info * game_info, Map_Info * map_info, Block_Info * block_i
 			//(main_cpy와 main_org가 전부 다르므로 다음번 draw()호출시 게임판 전체를 새로 그리게 됨) 
 		}
 		gotoxy(get_UI_Position_X(), (*ui_info).STATUS_Y_GOAL);
-			printf(" GOAL  : %5d", ((*game_info).cnt <= 10) ? 10 - (*game_info).cnt : 0);
+		printf(" GOAL  : %5d", ((*game_info).cnt <= 10) ? 10 - (*game_info).cnt : 0);
 		gotoxy(get_UI_Position_X(), (*ui_info).STATUS_Y_SCORE);
-			printf("        %6d", (*game_info).score);
+		printf("        %6d", (*game_info).score);
 	}
 
 	return;
@@ -531,7 +549,7 @@ void check_level_up(Game_Info * game_info, Map_Info * map_info, UI_Info * ui_inf
 			}
 		}
 		Sleep(100); //별찍은거 보여주기 위해 delay 
-		check_line(game_info,map_info,block_info,ui_info); //블록으로 모두 채운것 지우기
+		check_line(game_info, map_info, block_info, ui_info); //블록으로 모두 채운것 지우기
 //.check_line()함수 내부에서 level up flag가 켜져있는 경우 점수는 없음.         
 		switch ((*game_info).level) { //레벨별로 속도를 조절해줌. 
 		case 2:
@@ -625,7 +643,7 @@ void pause(Game_Info * game_info, Map_Info * map_info, Block_Info * block_info, 
 	system("cls"); //화면 지우고 새로 그림 
 	reset_main_cpy(map_info);
 	draw_main(map_info);
-	draw_map(game_info,ui_info);
+	draw_map(game_info, ui_info);
 
 	for (i = 1; i < 3; i++) { // 다음블록 그림 
 		for (j = 0; j < 4; j++) {
