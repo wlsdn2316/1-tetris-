@@ -489,7 +489,7 @@ void move_block(int dir, Block_Info * block_info, Map_Info * map_info) { //블록�
 
 		for (i = 0; i < 4; i++) { //회전된 블록을 찍음 
 			for (j = 0; j < 4; j++) {
-				if (blocks[b_type][(*block_info).b_rotation][i][j] == 1)
+				if (blocks[b_type][b_rotation][i][j] == 1)
 					(*map_info).main_org[by + i][bx + j] = ACTIVE_BLOCK;
 			}
 		}
@@ -508,7 +508,7 @@ void move_block(int dir, Block_Info * block_info, Map_Info * map_info) { //블록�
 
 		for (i = 0; i < 4; i++) {
 			for (j = 0; j < 4; j++) {
-				if (blocks[b_type][(*block_info).b_rotation][i][j] == 1)
+				if (blocks[b_type][b_rotation][i][j] == 1)
 					(*map_info).main_org[by + i - 1][bx + j] = ACTIVE_BLOCK;
 			}
 		}
