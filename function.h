@@ -23,7 +23,16 @@ CONSOLE_CURSOR_INFO setCurInfo(int size, BOOL flag); // Ä¿¼­ Á¤º¸¸¦ ¹Ş¾Æ¼­ ÀúÀåÇ
 void file_control(Game_Info * game_info, char * file_name, char * ch);
 void init_reset(Game_Info * game_info); //¸Å °ÔÀÓ¸¶´Ù ÃÊ±âÈ­°¡ ÇÊ¿äÇÑ º¯¼öµéÀ» ÃÊ±âÈ­½ÃÅ´
 void generateNextBlock(Block_Info *block_info);
+void set_new_block(Block_Info * block_info, Game_Info * game_info); //new_block¿¡¼­ ÇÊ¿äÇÑ °ªÀ» ¼¼ÆÃÇØÁÜ.
 
+void set_new_block(Block_Info * block_info, Game_Info * game_info) {
+	(*block_info).bx = (MAIN_X / 2) - 1; //ºí·Ï »ı¼º À§Ä¡xÁÂÇ¥(°ÔÀÓÆÇÀÇ °¡¿îµ¥) 
+	(*block_info).by = 0;  //ºí·Ï »ı¼ºÀ§Ä¡ yÁÂÇ¥(Á¦ÀÏ À§) 
+	(*block_info).b_type = (*block_info).b_type_next; //´ÙÀ½ºí·°°ªÀ» °¡Á®¿È 
+	(*block_info).b_type_next = rand() % 7; //´ÙÀ½ ºí·°À» ¸¸µê 
+	(*block_info).b_rotation = 0;  //È¸ÀüÀº 0¹øÀ¸·Î °¡Á®¿È 
+	(*game_info).new_block_on = 0; //new_block flag¸¦ ²û  
+}
 int get_UI_Position_X(void) {//°ÔÀÓÁ¤º¸Ç¥½Ã À§Ä¡Á¶Á¤ 
 
 	return MAIN_X_ADJ + MAIN_X + 1;
