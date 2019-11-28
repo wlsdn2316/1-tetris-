@@ -485,6 +485,7 @@ void move_block(int dir, Block_Info * block_info, Map_Info * map_info) { //블록�
 			}
 		}
 		(*block_info).b_rotation = ((*block_info).b_rotation + 1) % 4; //회전값을 1증가시킴(3에서 4가 되는 경우는 0으로 되돌림) 
+		b_rotation = (*block_info).b_rotation;
 
 		for (i = 0; i < 4; i++) { //회전된 블록을 찍음 
 			for (j = 0; j < 4; j++) {
@@ -502,7 +503,8 @@ void move_block(int dir, Block_Info * block_info, Map_Info * map_info) { //블록�
 					(*map_info).main_org[by + i][bx + j] = EMPTY;
 			}
 		}
-		(*block_info).b_rotation = ((*block_info).b_rotation + 1) % 4;
+		(*block_info).b_rotation = ((*block_info).b_rotation + 1) % 4; //회전값을 1증가시킴(3에서 4가 되는 경우는 0으로 되돌림) 
+		b_rotation = (*block_info).b_rotation;
 
 		for (i = 0; i < 4; i++) {
 			for (j = 0; j < 4; j++) {
