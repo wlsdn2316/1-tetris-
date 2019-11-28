@@ -22,6 +22,7 @@ void gotoxy(int x, int y);
 CONSOLE_CURSOR_INFO setCurInfo(int size, BOOL flag); // 커서 정보를 받아서 저장하고 커서 객체를 리턴함
 void file_control(Game_Info * game_info, char * file_name, char * ch);
 void init_reset(Game_Info * game_info); //매 게임마다 초기화가 필요한 변수들을 초기화시킴
+void generateNextBlock(Block_Info *block_info);
 
 int get_UI_Position_X(void) {//게임정보표시 위치조정 
 
@@ -279,18 +280,7 @@ void new_block(Block_Info * block_info, Game_Info * game_info, Map_Info * map_in
 			if (blocks[(*block_info).b_type][(*block_info).b_rotation][i][j] == 1) (*map_info).main_org[(*block_info).by + i][(*block_info).bx + j] = ACTIVE_BLOCK;
 		}
 	}
-	for (i = 1; i < 3; i++) { //게임상태표시에 다음에 나올블럭을 그림 
-		for (j = 0; j < 4; j++) {
-			if (blocks[(*block_info).b_type_next][0][i][j] == 1) {
-				gotoxy(get_UI_Position_X() + 2 + j, i + 6);
-				printf("■");
-			}
-			else {
-				gotoxy(get_UI_Position_X() + 2 + j, i + 6);
-				printf("  ");
-			}
-		}
-	}
+	generateNextBlock(block_info); //다음블록생성 함수 추가!
 
 	return;
 }
@@ -572,12 +562,11 @@ void check_level_up(Game_Info * game_info, Map_Info * map_info, UI_Info * ui_inf
 }
 
 void check_game_over(Game_Info * game_info, Map_Info * map_info, Block_Info * block_info, UI_Info * ui_info) {
-	int i;
 
 	int x = 5;
 	int y = 5;
 
-	for (i = 1; i < MAIN_X - 2; i++) {
+	for (int i = 1; i < MAIN_X - 2; i++) {
 		if ((*map_info).main_org[3][i] > 0) { //천장(위에서 세번째 줄)에 inactive가 생성되면 게임 오버 
 			gotoxy(x, y + 0); printf("▤▤▤▤▤▤▤▤▤▤▤▤▤▤▤▤▤"); //게임오버 메세지 
 			gotoxy(x, y + 1); printf("▤                              ▤");
@@ -616,12 +605,11 @@ void check_game_over(Game_Info * game_info, Map_Info * map_info, Block_Info * bl
 	return;
 }
 void pause(Game_Info * game_info, Map_Info * map_info, Block_Info * block_info, UI_Info * ui_info) { //게임 일시정지 함수 
-	int i, j;
-
+	
 	int x = 5;
 	int y = 5;
 
-	for (i = 1; i < MAIN_X - 2; i++) { //게임 일시정지 메세지 
+	for (int i = 1; i < MAIN_X - 2; i++) { //게임 일시정지 메세지 
 		gotoxy(x, y + 0); printf("▤▤▤▤▤▤▤▤▤▤▤▤▤▤▤▤▤");
 		gotoxy(x, y + 1); printf("▤                              ▤");
 		gotoxy(x, y + 2); printf("▤  +-----------------------+   ▤");
@@ -631,17 +619,26 @@ void pause(Game_Info * game_info, Map_Info * map_info, Block_Info * block_info, 
 		gotoxy(x, y + 6); printf("▤                              ▤");
 		gotoxy(x, y + 7); printf("▤▤▤▤▤▤▤▤▤▤▤▤▤▤▤▤▤");
 	}
-	_getch(); //키입력시까지 대기 
+	_getch(NULL); //키입력시까지 대기 
 
 	system("cls"); //화면 지우고 새로 그림 
 	system("cls"); //화면 지우고 새로 그림 
 	reset_main_cpy(map_info);
 	draw_main(map_info);
 	draw_map(game_info,ui_info);
+	generateNextBlock(block_info); //다음블록 생성함수
+	return;
+}
 
-	for (i = 1; i < 3; i++) { // 다음블록 그림 
-		for (j = 0; j < 4; j++) {
-			if (blocks[(*block_info).b_type_next][0][i][j] == 1) {
+void generateNextBlock(Block_Info *block_info)
+{
+	//다음블록 생성을 위해 반복되는 명령어는 함수로 바꾸었습니다.
+	static int i = 1;
+	static int j = 0;
+	int nextBlock = (*block_info).b_type_next; //다음 블록의 행렬에 '1'값 위치확인
+	for (int i = 1; i < 3; i++) { 
+		for (int j = 0; j < 4; j++) {
+			if (blocks[nextBlock][0][i][j] == 1) { //블록의 다음 위치 값 1을 찾는다
 				gotoxy(MAIN_X + MAIN_X_ADJ + 3 + j, i + 6);
 				printf("■");
 			}
@@ -651,5 +648,4 @@ void pause(Game_Info * game_info, Map_Info * map_info, Block_Info * block_info, 
 			}
 		}
 	}
-	return;
-} //끝! 
+}
