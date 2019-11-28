@@ -367,7 +367,7 @@ int check_crush(int bx, int by, int b_rotation, int bType, Map_Info * map_info) 
 }
 
 void move_block(int dir, Block_Info * block_info, Map_Info * map_info) { //블록을 이동시킴 
-	
+
 	int i, j;
 
 	int b_type = (*block_info).b_type;
@@ -620,7 +620,7 @@ void check_game_over(Game_Info * game_info, Map_Info * map_info, Block_Info * bl
 	return;
 }
 void pause(Game_Info * game_info, Map_Info * map_info, Block_Info * block_info, UI_Info * ui_info) { //게임 일시정지 함수 
-	
+
 	int x = 5;
 	int y = 5;
 
@@ -634,20 +634,16 @@ void pause(Game_Info * game_info, Map_Info * map_info, Block_Info * block_info, 
 		gotoxy(x, y + 6); printf("▤                              ▤");
 		gotoxy(x, y + 7); printf("▤▤▤▤▤▤▤▤▤▤▤▤▤▤▤▤▤");
 	}
-	_getch(NULL); //키입력시까지 대기 
+	_getch(); //키입력시까지 대기 
 
 	system("cls"); //화면 지우고 새로 그림 
 	system("cls"); //화면 지우고 새로 그림 
 	reset_main_cpy(map_info);
 	draw_main(map_info);
-<<<<<<< HEAD
 	draw_map(game_info, ui_info);
-=======
-	draw_map(game_info,ui_info);
 	generateNextBlock(block_info); //다음블록 생성함수
 	return;
 }
->>>>>>> add
 
 void generateNextBlock(Block_Info *block_info)
 {
@@ -655,7 +651,7 @@ void generateNextBlock(Block_Info *block_info)
 	static int i = 1;
 	static int j = 0;
 	int nextBlock = (*block_info).b_type_next; //다음 블록의 행렬에 '1'값 위치확인
-	for (int i = 1; i < 3; i++) { 
+	for (int i = 1; i < 3; i++) {
 		for (int j = 0; j < 4; j++) {
 			if (blocks[nextBlock][0][i][j] == 1) { //블록의 다음 위치 값 1을 찾는다
 				gotoxy(MAIN_X + MAIN_X_ADJ + 3 + j, i + 6);
