@@ -50,29 +50,39 @@ void init_reset(Game_Info * game_info) {
 
 void file_control(Game_Info * game_info, char * file_name, char * ch) { //file control함수로 읽기 저장하기 닫기 기능을 수행함.
 
+	/*
+	구조체 변수에 접근해서 사용하게되면 변수의 길이가
+	너무 길어지므로 지역변수에다 값을 넣어줍니다.
+	구조체 변수가 하나 이상 반복될 때 지역 변수로 바꿔줍니다.
+	주의할 점은 변수 값만 이용할 경우에만 해당됩니다.
+	값을 바꾸려고 하면 지역변수를 사용할 수 없습니다.
+
+	*/
+	FILE * pfile = (*game_info).file;
+
 	if (ch == "rb") {
-		fopen_s(&(*game_info).file, file_name, ch);
-		if ((*game_info).file == 0) { (*game_info).best_score = 0; } //파일이 없으면 걍 최고점수에 0을 넣음 
+		fopen_s(&pfile, file_name, ch);
+		if (pfile == 0) { (*game_info).best_score = 0; } //파일이 없으면 걍 최고점수에 0을 넣음 
 		else {
-			fscanf_s((*game_info).file, "%d", &(*game_info).best_score); // 파일이 열리면 최고점수를 불러옴 
+			fscanf_s(pfile, "%d", &(*game_info).best_score); // 파일이 열리면 최고점수를 불러옴 
 		}
 	}
 	else if (ch == "wb") {
-		fopen_s(&(*game_info).file, file_name, ch); //score.dat에 점수 저장                
-		if ((*game_info).file == NULL) {
+		fopen_s(&pfile, file_name, ch); //score.dat에 점수 저장                
+		if (pfile == NULL) {
 			gotoxy(0, 0);
 			printf("존재하지 않는 파일 입니다. \n");
 		}
-		fprintf((*game_info).file, "%d", (*game_info).score);
+		fprintf(pfile, "%d", (*game_info).score);
 
 	}
 
 	//모든 작업후엔 항상 close를 해야하므로 
-	if ((*game_info).file == NULL) {
+	if (pfile == NULL) {
 		printf("NULL 파일을 닫으려 하고있습니다.\n");
 		return;
 	}
-	fclose((*game_info).file); //파일 닫음	
+	fclose(pfile); //파일 닫음	
 
 }
 
@@ -103,6 +113,10 @@ void setcursortype(CURSOR_TYPE c) { //커서숨기는 함수
 		break;
 	}
 	SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &CurInfo);
+	//특정 콘솔창의 커서의 사이즈와 시점을 정하는 함수입니다. 
+	//첫번쨰 인자로 GetStdHandle()로 실제 핸들을 가져오며
+	//표준콘솔출력의 핸들(STD_OUTPUT_HANDLE)을 넘겨줍니다. 
+	//두번째 인자로 콘솔창 커서의 포인터를 넘겨줍니다.
 
 	return;
 }
@@ -263,17 +277,28 @@ void draw_main(Map_Info * map_info) { //게임판 그리는 함수
 void new_block(Block_Info * block_info, Game_Info * game_info, Map_Info * map_info) { //새로운 블록 생성  
 	int i, j;
 
-	(*block_info).bx = (MAIN_X / 2) - 1; //블록 생성 위치x좌표(게임판의 가운데) 
-	(*block_info).by = 0;  //블록 생성위치 y좌표(제일 위) 
-	(*block_info).b_type = (*block_info).b_type_next; //다음블럭값을 가져옴 
-	(*block_info).b_type_next = rand() % 7; //다음 블럭을 만듦 
-	(*block_info).b_rotation = 0;  //회전은 0번으로 가져옴 
+	//new_block에서 필요한 값 세팅
+	set_new_block(block_info, game_info);
 
-	(*game_info).new_block_on = 0; //new_block flag를 끔  
+	/*
+	구조체 변수에 접근해서 사용하게되면 변수의 길이가
+	너무 길어지므로 지역변수에다 값을 넣어줍니다.
+	구조체 변수가 하나 이상 반복될 때 지역 변수로 바꿔줍니다.
+	주의할 점은 변수 값만 이용할 경우에만 해당됩니다.
+	값을 바꾸려고 하면 지역변수를 사용할 수 없습니다.
+
+	*/
+
+	int b_type = (*block_info).b_type;
+	int b_rotation = (*block_info).b_rotation;
+	int bx = (*block_info).bx;
+	int by = (*block_info).by;
+	int b_type_next = (*block_info).b_type_next;
 
 	for (i = 0; i < 4; i++) { //게임판 bx, by위치에 블럭생성  
 		for (j = 0; j < 4; j++) {
-			if (blocks[(*block_info).b_type][(*block_info).b_rotation][i][j] == 1) (*map_info).main_org[(*block_info).by + i][(*block_info).bx + j] = ACTIVE_BLOCK;
+			if (blocks[b_type][b_rotation][i][j] == 1)
+				(*map_info).main_org[by + i][bx + j] = ACTIVE_BLOCK;
 		}
 	}
 	generateNextBlock(block_info); //다음블록생성 함수 추가!
@@ -284,30 +309,53 @@ void new_block(Block_Info * block_info, Game_Info * game_info, Map_Info * map_in
 void check_key(Game_Info * game_info, Block_Info * block_info, UI_Info * ui_info, Map_Info * map_info) {
 	(*game_info).key = 0; //키값 초기화  
 
+	/*
+	구조체 변수에 접근해서 사용하게되면 변수의 길이가
+	너무 길어지므로 지역변수에다 값을 넣어줍니다.
+	구조체 변수가 하나 이상 반복될 때 지역 변수로 바꿔줍니다.
+	주의할 점은 변수 값만 이용할 경우에만 해당됩니다.
+	값을 바꾸려고 하면 지역변수를 사용할 수 없습니다.
+
+	*/
+	int b_type = (*block_info).b_type;
+	int b_rotation = (*block_info).b_rotation;
+	int bx = (*block_info).bx;
+	int by = (*block_info).by;
+	int b_type_next = (*block_info).b_type_next;
+
 	if (_kbhit()) { //키입력이 있는 경우  
 		(*game_info).key = _getch(); //키값을 받음
 		if ((*game_info).key == 224) { //방향키인경우 
 			do { (*game_info).key = _getch(); } while ((*game_info).key == 224);//방향키지시값을 버림 
+
 			switch ((*game_info).key) {
 			case LEFT: //왼쪽키 눌렀을때  
-				if (check_crush((*block_info).bx - 1, (*block_info).by, (*block_info).b_rotation, (*block_info).b_type, map_info) == true) move_block(LEFT, block_info, map_info);
+				if (check_crush(bx - 1, by, b_rotation, b_type, map_info) == true)
+					move_block(LEFT, block_info, map_info);
 				break;                            //왼쪽으로 갈 수 있는지 체크 후 가능하면 이동
 			case RIGHT: //오른쪽 방향키 눌렀을때- 위와 동일하게 처리됨 
-				if (check_crush((*block_info).bx + 1, (*block_info).by, (*block_info).b_rotation, (*block_info).b_type, map_info) == true) move_block(RIGHT, block_info, map_info);
+				if (check_crush(bx + 1, by, b_rotation, b_type, map_info) == true)
+					move_block(RIGHT, block_info, map_info);
 				break;
 			case DOWN: //아래쪽 방향키 눌렀을때-위와 동일하게 처리됨 
-				if (check_crush((*block_info).bx, (*block_info).by + 1, (*block_info).b_rotation, (*block_info).b_type, map_info) == true) move_block(DOWN, block_info, map_info);
+				if (check_crush(bx, by + 1, b_rotation, b_type, map_info) == true)
+					move_block(DOWN, block_info, map_info);
 				break;
 			case UP: //위쪽 방향키 눌렀을때 
-				if (check_crush((*block_info).bx, (*block_info).by, ((*block_info).b_rotation + 1) % 4, (*block_info).b_type, map_info) == true) move_block(UP, block_info, map_info);
+				if (check_crush(bx, by, (b_rotation + 1) % 4, b_type, map_info) == true)
+					move_block(UP, block_info, map_info);
 				//회전할 수 있는지 체크 후 가능하면 회전
-				else if ((*game_info).crush_on == 1 && check_crush((*block_info).bx, (*block_info).by - 1, ((*block_info).b_rotation + 1) % 4, (*block_info).b_type, map_info) == true) move_block(100, block_info, map_info);
-			}                    //바닥에 닿은 경우 위쪽으로 한칸띄워서 회전이 가능하면 그렇게 함(특수동작)
-		}
+				else if ((*game_info).crush_on == 1
+					&& check_crush(bx, by - 1, (b_rotation + 1) % 4, b_type, map_info) == true)
+					move_block(100, block_info, map_info);
+				//바닥에 닿은 경우 위쪽으로 한칸띄워서 회전이 가능하면 그렇게 함(특수동작)
+			}//switch       
+		}//if
 		else { //방향키가 아닌경우 
 			switch ((*game_info).key) {
 			case SPACE: //스페이스키 눌렀을때 
 				(*game_info).space_key_on = 1; //스페이스키 flag를 띄움 
+
 				while ((*game_info).crush_on == 0) { //바닥에 닿을때까지 이동시킴 
 					drop_block(game_info, block_info, map_info, ui_info);
 					(*game_info).score += (*game_info).level; // hard drop 보너스
@@ -321,10 +369,14 @@ void check_key(Game_Info * game_info, Block_Info * block_info, UI_Info * ui_info
 			case ESC: //ESC눌렀을때 
 				system("cls"); //화면을 지우고 
 				exit(0); //게임종료 
-			}
-		}
-	}
+			}//switch
+		}//else
+	}//if
 	while (_kbhit()) _getch(); //키버퍼를 비움 
+	/* 키 버퍼를 비워주는 이유는 해당 과정중에 입력을 받지 않았는데
+	입력이 들어온 경우 버퍼에 해당 키값이 들어가 있게 됩니다. 이것을
+	입력값이 필요할때 호출하면 원하는 입력값이 아니라 도중에 눌렀던 키 값 중
+	하나가 들어가게 됩니다. 따라서 키 버퍼는 입력이 없을때 들어온 버퍼를 비워줘야 합니다.*/
 
 	return;
 }
