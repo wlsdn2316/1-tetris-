@@ -114,7 +114,7 @@ void setcursortype(CURSOR_TYPE c) { //커서숨기는 함수
 	}
 	SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &CurInfo);
 	//특정 콘솔창의 커서의 사이즈와 시점을 정하는 함수입니다. 
-	//첫번쨰 인자로 GetStdHandle()로 실제 핸들을 가져오며
+	//첫번? 인자로 GetStdHandle()로 실제 핸들을 가져오며
 	//표준콘솔출력의 핸들(STD_OUTPUT_HANDLE)을 넘겨줍니다. 
 	//두번째 인자로 콘솔창 커서의 포인터를 넘겨줍니다.
 
@@ -229,7 +229,8 @@ void draw_map(Game_Info * game_info, UI_Info * ui_info) { //게임 상태 표시를 나�
 	gotoxy(get_UI_Position_X(), y + 15); printf("  △   : Shift        SPACE : Hard Drop");
 	gotoxy(get_UI_Position_X(), y + 16); printf("◁  ▷ : Left / Right   P   : Pause");
 	gotoxy(get_UI_Position_X(), y + 17); printf("  ▽   : Soft Drop     ESC  : Quit");
-	gotoxy(get_UI_Position_X(), y + 20); printf("blog.naver.com/azure0777");
+	gotoxy(get_UI_Position_X(), y + 20); printf("Original codes  :   blog.naver.com/azure0777");
+	gotoxy(get_UI_Position_X(), y + 23); printf("Refactoring codes : https://github.com/wlsdn2316/1-tetris-"); Sleep(100);
 
 	return;
 }
