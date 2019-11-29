@@ -29,6 +29,10 @@ void file_control(Game_Info * game_info, char * file_name, char * ch);
 void init_reset(Game_Info * game_info); //매 게임마다 초기화가 필요한 변수들을 초기화시킴
 void generateNextBlock(Block_Info *block_info);
 void set_new_block(Block_Info * block_info, Game_Info * game_info); //new_block에서 필요한 값을 세팅해줌.
+void set_map_main(Map_Info * map_info, int index1, int index2, int status);	//map_main의 상태값을 변경
+void set_map_cpy(Map_Info * map_info, int index1, int index2, int status);	//map_cpy의 상태값을 변경
+int get_map_main(Map_Info * map_info, int index1, int index2);	//map_main의 상태값을 반환
+int get_map_cpy(Map_Info * map_info, int index1, int index2);	//map_cpy의 상태값을 반환
 
 void set_new_block(Block_Info * block_info, Game_Info * game_info) {
 	(*block_info).bx = (MAIN_X / 2) - 1; //블록 생성 위치x좌표(게임판의 가운데) 
@@ -748,4 +752,17 @@ void generateNextBlock(Block_Info *block_info)
 			}
 		}
 	}
+}
+
+void set_map_main(Map_Info * map_info, int index1, int index2, int status) { //map_main의 상태값을 변경
+	(*map_info).main_org[index1][index2] = status;
+}
+void set_map_cpy(Map_Info * map_info, int index1, int index2, int status) { //map_cpy의 상태값을 변경
+	(*map_info).main_cpy[index1][index2] = status;
+}
+int get_map_main(Map_Info * map_info, int index1, int index2) { //map_main의 상태값을 반환
+	return (*map_info).main_org[index1][index2];
+}
+int get_map_cpy(Map_Info * map_info, int index1, int index2) { //map_cpy의 상태값을 반환
+	return (*map_info).main_cpy[index1][index2];
 }
