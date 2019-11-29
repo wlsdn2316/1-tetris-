@@ -29,7 +29,8 @@ typedef enum {
 	CEILLING = -1,		// 블록이 이동할 수 있는 공간은 0 또는 음의 정수료 표현 
 	EMPTY = 0,
 	WALL = 1,			// 블록이 이동할 수 없는 공간은 양수로 표현 
-	INACTIVE_BLOCK = 2	// 이동이 완료된 블록값
+	INACTIVE_BLOCK = 2,	// 이동이 완료된 블록값
+	EXISTING_BLOCK = 1	// 현재 이동중인 블록
 }BLOCK_STATUS;	//BLOCK 상태값들
 
 typedef enum {

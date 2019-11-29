@@ -11,7 +11,7 @@ void draw_main(Map_Info * map_info); //게임판을 그림
 void new_block(Block_Info * block_info, Game_Info * game_info, Map_Info * map_info); //새로운 블록을 하나 만듦 
 void check_key(Game_Info * game_info, Block_Info * block_info, UI_Info * ui_info, Map_Info * map_info); //키보드로 키를 입력받음 
 void drop_block(Game_Info * game_info, Block_Info * block_info, Map_Info * map_info, UI_Info * ui_info); //블록을 아래로 떨어트림 
-int check_crush(int bx, int by, int b_rotation, int bType, Map_Info * map_info); //bx, by위치에 rotation회전값을 같는 경우 충돌 판단  
+int non_crush(int bx, int by, int b_rotation, int bType, Map_Info * map_info); //bx, by위치에 rotation회전값을 같는 경우 충돌 판단  
 void move_left(Block_Info * block_info, Map_Info * map_info);	// left 방향으로 블록을 움직임
 void move_right(Block_Info * block_info, Map_Info * map_info);	// right 방향으로 블록을 움직임
 void move_up(Block_Info * block_info, Map_Info * map_info);		// 블록을 회전시킴
@@ -302,7 +302,7 @@ void new_block(Block_Info * block_info, Game_Info * game_info, Map_Info * map_in
 
 	for (i = 0; i < 4; i++) { //게임판 bx, by위치에 블럭생성  
 		for (j = 0; j < 4; j++) {
-			if (blocks[b_type][b_rotation][i][j] == 1)
+			if (blocks[b_type][b_rotation][i][j] == EXISTING_BLOCK)
 				(*map_info).main_org[by + i][bx + j] = ACTIVE_BLOCK;
 		}
 	}
@@ -335,23 +335,23 @@ void check_key(Game_Info * game_info, Block_Info * block_info, UI_Info * ui_info
 
 			switch ((*game_info).key) {
 			case LEFT: //왼쪽키 눌렀을때  
-				if (check_crush(bx - 1, by, b_rotation, b_type, map_info) == true)
+				if (non_crush(bx - 1, by, b_rotation, b_type, map_info) == true)
 					move_left(block_info, map_info);
 				break;                            //왼쪽으로 갈 수 있는지 체크 후 가능하면 이동
 			case RIGHT: //오른쪽 방향키 눌렀을때- 위와 동일하게 처리됨 
-				if (check_crush(bx + 1, by, b_rotation, b_type, map_info) == true)
+				if (non_crush(bx + 1, by, b_rotation, b_type, map_info) == true)
 					move_right(block_info, map_info);
 				break;
 			case DOWN: //아래쪽 방향키 눌렀을때-위와 동일하게 처리됨 
-				if (check_crush(bx, by + 1, b_rotation, b_type, map_info) == true)
+				if (non_crush(bx, by + 1, b_rotation, b_type, map_info) == true)
 					move_down(block_info, map_info);
 				break;
 			case UP: //위쪽 방향키 눌렀을때 
-				if (check_crush(bx, by, (b_rotation + 1) % 4, b_type, map_info) == true)
+				if (non_crush(bx, by, (b_rotation + 1) % 4, b_type, map_info) == true)
 					move_up(block_info, map_info);
 				//회전할 수 있는지 체크 후 가능하면 회전
 				else if ((*game_info).crush_on == 1
-					&& check_crush(bx, by - 1, (b_rotation + 1) % 4, b_type, map_info) == true)
+					&& non_crush(bx, by - 1, (b_rotation + 1) % 4, b_type, map_info) == true)
 					move_bottom_ratation(block_info, map_info);
 				//바닥에 닿은 경우 위쪽으로 한칸띄워서 회전이 가능하면 그렇게 함(특수동작)
 			}//switch       
@@ -390,9 +390,9 @@ void drop_block(Game_Info * game_info, Block_Info * block_info, Map_Info * map_i
 	int i;
 	int j;
 
-	if ((*game_info).crush_on&&check_crush((*block_info).bx, (*block_info).by + 1, (*block_info).b_rotation, (*block_info).b_type, map_info) == true)
+	if ((*game_info).crush_on&&non_crush((*block_info).bx, (*block_info).by + 1, (*block_info).b_rotation, (*block_info).b_type, map_info) == true)
 		(*game_info).crush_on = 0; //밑이 비어있으면 crush flag 끔 
-	if ((*game_info).crush_on&&check_crush((*block_info).bx, (*block_info).by + 1, (*block_info).b_rotation, (*block_info).b_type, map_info) == false) { //밑이 비어있지않고 crush flag가 켜저있으면 
+	if ((*game_info).crush_on&&non_crush((*block_info).bx, (*block_info).by + 1, (*block_info).b_rotation, (*block_info).b_type, map_info) == false) { //밑이 비어있지않고 crush flag가 켜저있으면 
 		for (i = 0; i < MAIN_Y; i++) { //현재 조작중인 블럭을 굳힘 
 			for (j = 0; j < MAIN_X; j++) {
 				if ((*map_info).main_org[i][j] == ACTIVE_BLOCK)
@@ -404,20 +404,21 @@ void drop_block(Game_Info * game_info, Block_Info * block_info, Map_Info * map_i
 		(*game_info).new_block_on = 1; //새로운 블럭생성 flag를 켬    
 		return; //함수 종료 
 	}
-	if (check_crush((*block_info).bx, (*block_info).by + 1, (*block_info).b_rotation, (*block_info).b_type, map_info) == true)
+	if (non_crush((*block_info).bx, (*block_info).by + 1, (*block_info).b_rotation, (*block_info).b_type, map_info) == true)
 		move_down(block_info, map_info); //밑이 비어있으면 밑으로 한칸 이동 
-	if (check_crush((*block_info).bx, (*block_info).by + 1, (*block_info).b_rotation, (*block_info).b_type, map_info) == false)
+	if (non_crush((*block_info).bx, (*block_info).by + 1, (*block_info).b_rotation, (*block_info).b_type, map_info) == false)
 		(*game_info).crush_on++; //밑으로 이동이 안되면  crush flag를 켬
 
 	return;
 }
 
-int check_crush(int bx, int by, int b_rotation, int bType, Map_Info * map_info) { //지정된 좌표와 회전값으로 충돌이 있는지 검사 
+int non_crush(int bx, int by, int b_rotation, int bType, Map_Info * map_info) { //지정된 좌표와 회전값으로 충돌이 있는지 검사 
 	int i, j;
 
 	for (i = 0; i < 4; i++) {
 		for (j = 0; j < 4; j++) { //지정된 위치의 게임판과 블럭모양을 비교해서 겹치면 false를 리턴 
-			if (blocks[bType][b_rotation][i][j] == 1 && (*map_info).main_org[by + i][bx + j] > 0) return false;
+			if (blocks[bType][b_rotation][i][j] == EXISTING_BLOCK && (*map_info).main_org[by + i][bx + j] > 0) 
+				return false;
 		}
 	}
 	return true; //하나도 안겹치면 true리턴 
@@ -434,13 +435,13 @@ void move_left(Block_Info * block_info, Map_Info * map_info)
 
 	for (i = 0; i < 4; i++) { //현재좌표의 블럭을 지움 
 		for (j = 0; j < 4; j++) {
-			if (blocks[b_type][b_rotation][i][j] == 1) // ★ blckos[b_type][b_rotation][i][j] == 1 일때는 테트리스 블록이 있을 때이다.
+			if (blocks[b_type][b_rotation][i][j] == EXISTING_BLOCK) // ★ blckos[b_type][b_rotation][i][j] == EXISTING_BLOCK 일때는 테트리스 블록이 있을 때이다.
 				(*map_info).main_org[by + i][bx + j] = EMPTY;
 		}
 	}
 	for (i = 0; i < 4; i++) { //왼쪽으로 한칸가서 active block을 찍음 
 		for (j = 0; j < 4; j++) {
-			if (blocks[b_type][b_rotation][i][j] == 1)
+			if (blocks[b_type][b_rotation][i][j] == EXISTING_BLOCK)
 				(*map_info).main_org[by + i][bx + j - 1] = ACTIVE_BLOCK;
 		}
 	}
@@ -458,13 +459,13 @@ void move_right(Block_Info * block_info, Map_Info * map_info)
 
 	for (i = 0; i < 4; i++) {
 		for (j = 0; j < 4; j++) {
-			if (blocks[b_type][b_rotation][i][j] == 1)
+			if (blocks[b_type][b_rotation][i][j] == EXISTING_BLOCK)
 				(*map_info).main_org[by + i][bx + j] = EMPTY;
 		}
 	}
 	for (i = 0; i < 4; i++) {
 		for (j = 0; j < 4; j++) {
-			if (blocks[b_type][b_rotation][i][j] == 1)
+			if (blocks[b_type][b_rotation][i][j] == EXISTING_BLOCK)
 				(*map_info).main_org[by + i][bx + j + 1] = ACTIVE_BLOCK;
 		}
 	}
@@ -482,7 +483,7 @@ void move_up(Block_Info * block_info, Map_Info * map_info)
 
 	for (i = 0; i < 4; i++) { //현재좌표의 블럭을 지움  
 		for (j = 0; j < 4; j++) {
-			if (blocks[b_type][b_rotation][i][j] == 1)
+			if (blocks[b_type][b_rotation][i][j] == EXISTING_BLOCK)
 				(*map_info).main_org[by + i][bx + j] = EMPTY;
 		}
 	}
@@ -491,7 +492,7 @@ void move_up(Block_Info * block_info, Map_Info * map_info)
 
 	for (i = 0; i < 4; i++) { //회전된 블록을 찍음 
 		for (j = 0; j < 4; j++) {
-			if (blocks[b_type][b_rotation][i][j] == 1)
+			if (blocks[b_type][b_rotation][i][j] == EXISTING_BLOCK)
 				(*map_info).main_org[by + i][bx + j] = ACTIVE_BLOCK;
 		}
 	}
@@ -508,13 +509,13 @@ void move_down(Block_Info * block_info, Map_Info * map_info)
 
 	for (i = 0; i < 4; i++) {
 		for (j = 0; j < 4; j++) {
-			if (blocks[b_type][b_rotation][i][j] == 1)
+			if (blocks[b_type][b_rotation][i][j] == EXISTING_BLOCK)
 				(*map_info).main_org[by + i][bx + j] = EMPTY;
 		}
 	}
 	for (i = 0; i < 4; i++) {
 		for (j = 0; j < 4; j++) {
-			if (blocks[b_type][b_rotation][i][j] == 1)
+			if (blocks[b_type][b_rotation][i][j] == EXISTING_BLOCK)
 				(*map_info).main_org[by + i + 1][bx + j] = ACTIVE_BLOCK;
 		}
 	}
@@ -532,7 +533,7 @@ void move_bottom_ratation(Block_Info * block_info, Map_Info * map_info)
 
 	for (i = 0; i < 4; i++) {
 		for (j = 0; j < 4; j++) {
-			if (blocks[b_type][b_rotation][i][j] == 1)
+			if (blocks[b_type][b_rotation][i][j] == EXISTING_BLOCK)
 				(*map_info).main_org[by + i][bx + j] = EMPTY;
 		}
 	}
@@ -541,7 +542,7 @@ void move_bottom_ratation(Block_Info * block_info, Map_Info * map_info)
 
 	for (i = 0; i < 4; i++) {
 		for (j = 0; j < 4; j++) {
-			if (blocks[b_type][b_rotation][i][j] == 1)
+			if (blocks[b_type][b_rotation][i][j] == EXISTING_BLOCK)
 				(*map_info).main_org[by + i - 1][bx + j] = ACTIVE_BLOCK;
 		}
 	}
@@ -737,7 +738,7 @@ void generateNextBlock(Block_Info *block_info)
 	int nextBlock = (*block_info).b_type_next; //다음 블록의 행렬에 '1'값 위치확인
 	for (int i = 1; i < 3; i++) {
 		for (int j = 0; j < 4; j++) {
-			if (blocks[nextBlock][0][i][j] == 1) { //블록의 다음 위치 값 1을 찾는다
+			if (blocks[nextBlock][0][i][j] == EXISTING_BLOCK) { //블록의 다음 위치 값 1을 찾는다
 				gotoxy(MAIN_X + MAIN_X_ADJ + 3 + j, i + 6);
 				printf("■");
 			}
