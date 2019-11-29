@@ -19,7 +19,8 @@ typedef enum {
 	SPACE = 32,	//hard drop
 	p = 112,		//일시정지 
 	P = 80,		//일시정지
-	ESC = 27		//게임종료 
+	ESC = 27,		//게임종료 
+	BOTTOM_ROTATION= 100	// 블록이 지면 또는 블록에 닿았을 때 회전값
 } KEYCODE; //키보드값들
 
 
@@ -96,7 +97,7 @@ typedef struct _Game_Info {
 }Game_Info;
 
 typedef struct _Map_Info {
-	
+
 	int main_org[MAIN_Y][MAIN_X]; //게임판의 정보를 저장하는 배열 모니터에 표시후에 main_cpy로 복사됨 
 	int main_cpy[MAIN_Y][MAIN_X]; //즉 maincpy는 게임판이 모니터에 표시되기 전의 정보를 가지고 있음 
 								  //main의 전체를 계속 모니터에 표시하지 않고(이렇게 하면 모니터가 깜빡거림) 
