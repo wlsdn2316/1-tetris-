@@ -26,7 +26,7 @@ int main() {
 			check_key(&game_info, &block_info, &ui_info, &map_info); //키입력확인 
 			draw_main(&map_info); //화면을 그림 
 			Sleep(game_info.speed); //게임속도조절 
-			if (game_info.crush_on && check_crush(block_info.bx, block_info.by + 1, block_info.b_rotation, block_info.b_type, &map_info) == false) Sleep(100);
+			if (game_info.crush_on && non_crush(block_info.bx, block_info.by + 1, block_info.b_rotation, block_info.b_type, &map_info) == false) Sleep(100);
 			//블록이 충돌중인경우 추가로 이동및 회전할 시간을 갖음 
 			if (game_info.space_key_on == 1) { //스페이스바를 누른경우(hard drop) 추가로 이동및 회전할수 없음 break; 
 				game_info.space_key_on = 0;
@@ -34,10 +34,10 @@ int main() {
 			}
 		}
 
-		drop_block(&game_info,&block_info,&map_info,&ui_info); // 블록을 한칸 내림 
-		check_level_up(&game_info,&map_info,&ui_info,&block_info); // 레벨업을 체크 
-		check_game_over(&game_info,&map_info,&block_info,&ui_info); //게임오버를 체크 
-		if (game_info.new_block_on == 1) new_block(&block_info,&game_info,&map_info); // 뉴 블럭 flag가 있는 경우 새로운 블럭 생성 
+		drop_block(&game_info, &block_info, &map_info, &ui_info); // 블록을 한칸 내림 
+		check_level_up(&game_info, &map_info, &ui_info, &block_info); // 레벨업을 체크 
+		check_game_over(&game_info, &map_info, &block_info, &ui_info); //게임오버를 체크 
+		if (game_info.new_block_on == 1) new_block(&block_info, &game_info, &map_info); // 뉴 블럭 flag가 있는 경우 새로운 블럭 생성 
 
 	}
 }
