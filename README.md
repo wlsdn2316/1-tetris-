@@ -29,6 +29,7 @@ included in all copies or substantial portions of the Software.
 <h3>init.h : Only variables define.</h3>
 <h3>main.c : Excute Program.</h3>
 <h3>function.h : Only functions define and declare.</h3>
+<h3>Wiki : https://github.com/wlsdn2316/1-tetris-/wiki/Functions</h3>
 </div>
 
 <h1>Example</h1>
