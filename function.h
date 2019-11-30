@@ -18,6 +18,7 @@ void move_up(Block_Info * block_info, Map_Info * map_info);		// 블록을 회전시킴
 void move_down(Block_Info * block_info, Map_Info * map_info);	// down 방향으로 블록을 움직암
 void move_bottom_ratation(Block_Info * block_info, Map_Info * map_info);	// 블록이 밑면 또는 블록에 닿았을 때 회전시킴
 void Check_line(Game_Info * game_info, Map_Info * map_info, Block_Info * block_info, UI_Info * ui_info); //줄이 가득찼는지를 판단하고 지움 
+void Cal_score_line(Game_Info* game_info, Map_Info* map_info, int i); // 블록이 가득 찬 경우 줄을 한칸 씩 내리는 함수
 void check_level_up(Game_Info * game_info, Map_Info * map_info, UI_Info * ui_info, Block_Info * block_info); //레벨목표가 달성되었는지를 판단하고 levelup시킴 
 void check_game_over(Game_Info * game_info, Map_Info * map_info, Block_Info * block_info, UI_Info * ui_info); //게임오버인지 판단하고 게임오버를 진행 
 void pause(Game_Info * game_info, Map_Info * map_info, Block_Info * block_info, UI_Info * ui_info);//게임을 일시정지시킴 
@@ -66,7 +67,6 @@ void file_control(Game_Info * game_info, char * file_name, char * ch) { //file c
 	구조체 변수가 하나 이상 반복될 때 지역 변수로 바꿔줍니다.
 	주의할 점은 변수 값만 이용할 경우에만 해당됩니다.
 	값을 바꾸려고 하면 지역변수를 사용할 수 없습니다.
-
 	*/
 	FILE * pfile = (*game_info).file;
 
@@ -182,7 +182,6 @@ void reset(Game_Info * game_info, Block_Info * block_info, UI_Info * ui_info, Ma
 
 	return;
 }
-
 
 void Reset_main(Map_Info* map_info) { // 게임판의 정보를 저장하는 main_org를 초기화한다
 	int i;
@@ -300,7 +299,6 @@ void new_block(Block_Info * block_info, Game_Info * game_info, Map_Info * map_in
 	구조체 변수가 하나 이상 반복될 때 지역 변수로 바꿔줍니다.
 	주의할 점은 변수 값만 이용할 경우에만 해당됩니다.
 	값을 바꾸려고 하면 지역변수를 사용할 수 없습니다.
-
 	*/
 
 	int b_type = (*block_info).b_type;
@@ -329,7 +327,6 @@ void check_key(Game_Info * game_info, Block_Info * block_info, UI_Info * ui_info
 	구조체 변수가 하나 이상 반복될 때 지역 변수로 바꿔줍니다.
 	주의할 점은 변수 값만 이용할 경우에만 해당됩니다.
 	값을 바꾸려고 하면 지역변수를 사용할 수 없습니다.
-
 	*/
 	int b_type = (*block_info).b_type;
 	int b_rotation = (*block_info).b_rotation;
@@ -368,7 +365,13 @@ void check_key(Game_Info * game_info, Block_Info * block_info, UI_Info * ui_info
 		else { //방향키가 아닌경우 
 			switch ((*game_info).key) {
 			case SPACE: //스페이스키 눌렀을때 
-				move_space(game_info, block_info, map_info, ui_info);
+				(*game_info).space_key_on = 1; //스페이스키 flag를 띄움 
+
+				while ((*game_info).crush_on == 0) { //바닥에 닿을때까지 이동시킴 
+					Drop_block(game_info, block_info, map_info, ui_info);
+					(*game_info).score += (*game_info).level; // hard drop 보너스
+					gotoxy(get_UI_Position_X(), (*ui_info).STATUS_Y_SCORE); printf("        %6d", (*game_info).score); //점수 표시  
+				}
 				break;
 			case P: //P(대문자) 눌렀을때 
 			case p: //p(소문자) 눌렀을때 
@@ -556,18 +559,16 @@ void move_bottom_ratation(Block_Info * block_info, Map_Info * map_info)
 	(*block_info).by--;
 }
 
-void Check_line(Game_Info * game_info, Map_Info * map_info, Block_Info * block_info, UI_Info * ui_info) {
+void Check_line(Game_Info* game_info, Map_Info* map_info, Block_Info* block_info, UI_Info* ui_info) { //블록이 가득찼는지 검사하고 점수를 계산하는 함수
 	int i;
 	int j;
-	int k;
-	int l;
 	int block_amount; //한줄의 블록갯수를 저장하는 변수 
 	int combo = 0; //콤보갯수 저장하는 변수 지정및 초기화 
 
 	for (i = MAIN_Y - 2; i > 3;) { //i=MAIN_Y-2 : 밑쪽벽의 윗칸부터,  i>3 : 천장(3)아래까지 검사 
 		block_amount = 0; //블록갯수 저장 변수 초기화 
-		for (j = 1; j < MAIN_X - 1; j++) { //벽과 벽사이의 블록갯루를 셈 
-			if (get_map_main(map_info,i,j) > 0)
+		for (j = 1; j < MAIN_X - 1; j++) { //벽과 벽사이의 블록갯수를 셈 
+			if (get_map_main(map_info, i, j) > 0)
 				block_amount++;
 		}
 		if (block_amount == MAIN_X - 2) { //블록이 가득 찬 경우 
@@ -576,26 +577,18 @@ void Check_line(Game_Info * game_info, Map_Info * map_info, Block_Info * block_i
 				(*game_info).cnt++; //지운 줄 갯수 카운트 증가 
 				combo++; //콤보수 증가  
 			}
-			for (k = i; k > 1; k--) { //블록이 가득 찬 경우 줄을 한칸씩 내린다
-				for (l = 1; l < MAIN_X - 1; l++) {
-					if (get_map_main(map_info, k - 1, l) != CEILLING)
-						set_map_main(map_info, k, l, get_map_main(map_info, k - 1, l));
-					if (get_map_main(map_info, k - 1, l) == CEILLING)
-						set_map_main(map_info, k, l, EMPTY);
-					//윗줄이 천장인 경우에는 천장을 한칸 내리면 안되니까 빈칸을 넣음 
-				}
-			}
+			Cal_score_line(game_info, map_info, i); //블록이 가득 찬 경우 줄을 한칸씩 내리는 함수
 		}
 		else i--;
 	}
-
+	
 	if (combo) { //줄 삭제가 있는 경우 점수와 레벨 목표를 새로 표시함  
 		if (combo > 1) { //2콤보이상인 경우 경우 보너스및 메세지를 게임판에 띄웠다가 지움 
 			gotoxy(MAIN_X_ADJ + (MAIN_X / 2) - 1, MAIN_Y_ADJ + (*block_info).by - 2);
 			printf("%d COMBO!", combo);
 			Sleep(500);
-			(*game_info).score += (combo*(*game_info).level * 100);
-			Reset_main_cpy(map_info); //텍스트를 지우기 위해 main_cpy을 초기화
+			(*game_info).score += (combo * (*game_info).level * 100);
+			Reset_main_cpy(map_info); //텍스트를 지우기 위해 main_cpy을 초기화.
 			//main_cpy와 main_org가 전부 다르므로 다음번 draw()호출시 게임판 전체를 새로 그리게 됨
 		}
 		gotoxy(get_UI_Position_X(), (*ui_info).STATUS_Y_GOAL);
@@ -606,6 +599,23 @@ void Check_line(Game_Info * game_info, Map_Info * map_info, Block_Info * block_i
 
 	return;
 }
+
+void Cal_score_line(Game_Info* game_info, Map_Info* map_info, int i) {  //블록이 가득 찬 경우 줄을 한칸씩 내리는 함수
+
+	int k;
+	int l;
+
+	for (k = i; k > 1; k--) { //윗줄이 천장이 아닌 경우에만 윗줄을 한칸씩 모두 내림  
+		for (l = 1; l < MAIN_X - 1; l++) {
+			if (get_map_main(map_info, k - 1, l) != CEILLING)
+				set_map_main(map_info, k, l, get_map_main(map_info, k - 1, l));
+			if (get_map_main(map_info, k - 1, l) == CEILLING)
+				set_map_main(map_info, k, l, EMPTY);
+			//윗줄이 천장인 경우에는 천장을 한칸 내리면 안되니까 빈칸을 넣음 		
+		}
+	}
+}
+
 void check_level_up(Game_Info * game_info, Map_Info * map_info, UI_Info * ui_info, Block_Info * block_info) {
 	int i, j;
 
