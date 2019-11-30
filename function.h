@@ -34,6 +34,7 @@ void set_map_main(Map_Info * map_info, int index1, int index2, int status);
 void set_map_cpy(Map_Info * map_info, int index1, int index2, int status);
 int get_map_main(Map_Info * map_info, int index1, int index2);
 int get_map_cpy(Map_Info * map_info, int index1, int index2);
+void move_space(Game_Info * game_info, Block_Info * block_info, Map_Info * map_info, UI_Info * ui_info);
 
 void set_new_block(Block_Info * block_info, Game_Info * game_info) {
 	(*block_info).bx = (MAIN_X / 2) - 1; //블록 생성 위치x좌표(게임판의 가운데) 
@@ -767,4 +768,13 @@ int get_map_main(Map_Info * map_info, int index1, int index2) { //map_main의 상�
 }
 int get_map_cpy(Map_Info * map_info, int index1, int index2) { //map_cpy의 상태값을 반환
 	return (*map_info).main_cpy[index1][index2];
+}
+void move_space(Game_Info * game_info,Block_Info * block_info, Map_Info * map_info ,UI_Info * ui_info) {
+	(*game_info).space_key_on = 1; //스페이스키 flag를 띄움 
+
+	while ((*game_info).crush_on == 0) { //바닥에 닿을때까지 이동시킴 
+		drop_block(game_info, block_info, map_info, ui_info);
+		(*game_info).score += (*game_info).level; // hard drop 보너스
+		gotoxy(get_UI_Position_X(), (*ui_info).STATUS_Y_SCORE); printf("        %6d", (*game_info).score); //점수 표시  
+	}
 }
