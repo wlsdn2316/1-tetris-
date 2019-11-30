@@ -24,6 +24,8 @@ void Check_Game_Over(Game_Info * game_info, Map_Info * map_info, Block_Info * bl
 void Pause(Game_Info * game_info, Map_Info * map_info, Block_Info * block_info, UI_Info * ui_info);//게임을 일시정지시킴 
 void Setcursortype(CURSOR_TYPE c);
 void Gotoxy(int x, int y);
+void Check_levelup_popup(Game_Info* game_info, Map_Info* map_info); //게임 레벨업시 레벨업과 스피드업 표시
+void Game_Level_Up(Game_Info* game_info); // 게임 난이도조절
 
 CONSOLE_CURSOR_INFO SetCurInfo(int size, BOOL flag); // 커서 정보를 받아서 저장하고 커서 객체를 리턴함
 void File_Control(Game_Info * game_info, char * file_name, char * ch);
@@ -660,7 +662,7 @@ void Cal_Score_Line(Game_Info* game_info, Map_Info* map_info, int i) {  //블록이
 }
 
 void Check_Level_Up(Game_Info * game_info, Map_Info * map_info, UI_Info * ui_info, Block_Info * block_info) {
-	int i, j;
+
 
 	if ((*game_info).cnt >= 10) { //레벨별로 10줄씩 없애야함. 10줄이상 없앤 경우 
 		Draw_Main(map_info);
@@ -668,64 +670,10 @@ void Check_Level_Up(Game_Info * game_info, Map_Info * map_info, UI_Info * ui_inf
 		(*game_info).level += 1; //레벨을 1 올림 
 		(*game_info).cnt = 0; //지운 줄수 초기화   
 
-		for (i = 0; i < 4; i++) {
-			Gotoxy(MAIN_X_ADJ + (MAIN_X / 2) - 3, MAIN_Y_ADJ + 4);
-			printf("             ");
-			Gotoxy(MAIN_X_ADJ + (MAIN_X / 2) - 2, MAIN_Y_ADJ + 6);
-			printf("             ");
-			Sleep(200);
-
-			Gotoxy(MAIN_X_ADJ + (MAIN_X / 2) - 3, MAIN_Y_ADJ + 4);
-			printf("☆LEVEL UP!☆");
-			Gotoxy(MAIN_X_ADJ + (MAIN_X / 2) - 2, MAIN_Y_ADJ + 6);
-			printf("☆SPEED UP!☆");
-			Sleep(200);
-		}
-		Reset_Main_Cpy(map_info); //텍스트를 지우기 위해 main_cpy을 초기화.
-							//(main_cpy와 main_org가 전부 다르므로 다음번 draw()호출시 게임판 전체를 새로 그리게 됨) 
-
-		for (i = MAIN_Y - 2; i > MAIN_Y - 2 - ((*game_info).level - 1); i--) { //레벨업보상으로 각 레벨-1의 수만큼 아랫쪽 줄을 지워줌 
-			for (j = 1; j < MAIN_X - 1; j++) {
-				Set_Map_Main(map_info, i, j, INACTIVE_BLOCK);// 줄을 블록으로 모두 채우고 
-				Gotoxy(MAIN_X_ADJ + j, MAIN_Y_ADJ + i); // 별을 찍어줌.. 이뻐보이게 
-				printf("★");
-				Sleep(20);
-			}
-		}
-		Sleep(100); //별찍은거 보여주기 위해 delay 
+		Check_levelup_popup(game_info, map_info); //게임 레벨업과 스피드업 표시
 		Check_Line(game_info, map_info, block_info, ui_info); //블록으로 모두 채운것 지우기
 		//.Check_Line()함수 내부에서 level up flag가 켜져있는 경우 점수는 없음.         
-		switch ((*game_info).level) { //레벨별로 속도를 조절해줌. 
-		case 2:
-			(*game_info).speed = 50;
-			break;
-		case 3:
-			(*game_info).speed = 25;
-			break;
-		case 4:
-			(*game_info).speed = 10;
-			break;
-		case 5:
-			(*game_info).speed = 5;
-			break;
-		case 6:
-			(*game_info).speed = 4;
-			break;
-		case 7:
-			(*game_info).speed = 3;
-			break;
-		case 8:
-			(*game_info).speed = 2;
-			break;
-		case 9:
-			(*game_info).speed = 1;
-			break;
-		case 10:
-			(*game_info).speed = 0;
-			break;
-		}
-		(*game_info).level_up_on = 0; //레벨업 flag꺼줌
-
+		Game_Level_Up(game_info); //게임 난이도 조절
 		Gotoxy(get_UI_Position_X(), (*ui_info).STATUS_Y_LEVEL); printf(" LEVEL : %5d", (*game_info).level); //레벨표시 
 		Gotoxy(get_UI_Position_X(), (*ui_info).STATUS_Y_GOAL); printf(" GOAL  : %5d", 10 - (*game_info).cnt); // 레벨목표 표시 
 
@@ -809,6 +757,75 @@ void GenerateNextBlock(Block_Info *block_info)
 		}
 	}
 }
+
+void Check_levelup_popup(Game_Info* game_info, Map_Info* map_info)
+{
+	int gameLevel = (*game_info).level;
+	int i;
+	int j;
+
+	for (i = 0; i < 4; i++) {
+		Gotoxy(MAIN_X_ADJ + (MAIN_X / 2) - 3, MAIN_Y_ADJ + 4);
+		printf("             ");
+		Gotoxy(MAIN_X_ADJ + (MAIN_X / 2) - 3, MAIN_Y_ADJ + 6);
+		printf("             ");
+		Sleep(200);
+
+		Gotoxy(MAIN_X_ADJ + (MAIN_X / 2) - 3, MAIN_Y_ADJ + 4);
+		printf("☆LEVEL UP!☆");
+		Gotoxy(MAIN_X_ADJ + (MAIN_X / 2) - 3, MAIN_Y_ADJ + 6);
+		printf("☆SPEED UP!☆");
+		Sleep(200);
+	}
+	Reset_Main_Cpy(map_info); //텍스트를 지우기 위해 main_cpy을 초기화.
+						//(main_cpy와 main_org가 전부 다르므로 다음번 draw()호출시 게임판 전체를 새로 그리게 됨) 
+
+	for (i = MAIN_Y - 2; i > MAIN_Y - 2 - (gameLevel - 1); i--) { //레벨업보상으로 각 레벨-1의 수만큼 아랫쪽 줄을 지워줌 
+		for (j = 1; j < MAIN_X - 1; j++) {
+			Set_Map_Main(map_info, i, j, INACTIVE_BLOCK);// 줄을 블록으로 모두 채우고 
+			Gotoxy(MAIN_X_ADJ + j, MAIN_Y_ADJ + i); // 별을 찍어줌.. 이뻐보이게 
+			printf("★");
+			Sleep(20);
+		}
+	}
+	Sleep(100); //별찍은거 보여주기 위해 delay 
+}
+
+void Game_Level_Up(Game_Info* game_info)
+{
+
+	switch ((*game_info).level) { //레벨별로 속도를 조절해줌. 
+	case 2:
+		(*game_info).speed = 50;
+		break;
+	case 3:
+		(*game_info).speed = 25;
+		break;
+	case 4:
+		(*game_info).speed = 10;
+		break;
+	case 5:
+		(*game_info).speed = 5;
+		break;
+	case 6:
+		(*game_info).speed = 4;
+		break;
+	case 7:
+		(*game_info).speed = 3;
+		break;
+	case 8:
+		(*game_info).speed = 2;
+		break;
+	case 9:
+		(*game_info).speed = 1;
+		break;
+	case 10:
+		(*game_info).speed = 0;
+		break;
+	}
+	(*game_info).level_up_on = 0; //레벨업 flag꺼줌
+}
+
 void Set_Map_Main(Map_Info * map_info, int index1, int index2, int status) { //map_main의 상태값을 변경
 	(*map_info).main_org[index1][index2] = status;
 }
