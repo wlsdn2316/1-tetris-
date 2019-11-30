@@ -34,7 +34,7 @@ int main() {
 			}
 		}
 
-		drop_block(&game_info, &block_info, &map_info, &ui_info); // 블록을 한칸 내림 
+		Drop_block(&game_info, &block_info, &map_info, &ui_info); // 블록을 한칸 내림 
 		check_level_up(&game_info, &map_info, &ui_info, &block_info); // 레벨업을 체크 
 		check_game_over(&game_info, &map_info, &block_info, &ui_info); //게임오버를 체크 
 		if (game_info.new_block_on == 1) new_block(&block_info, &game_info, &map_info); // 뉴 블럭 flag가 있는 경우 새로운 블럭 생성 
