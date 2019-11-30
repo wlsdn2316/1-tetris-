@@ -266,8 +266,8 @@ void Reset_Main_Cpy(Map_Info* map_info) { //main_cpy를 초기화
 }
 
 void Draw_Map(Game_Info * game_info, UI_Info * ui_info) { //게임 상태 표시를 나타내는 함수  
-	int y = 3;             // level, goal, score만 게임중에 값이 바뀔수 도 있음 그 y값을 따로 저장해둠 
-						 // 그래서 혹시 게임 상태 표시 위치가 바뀌어도 그 함수에서 안바꿔도 되게.. 
+	int y = 3;	// level, goal, score만 게임 중에 값이 바뀔수 도 있기 때문에 y값을 따로 저장해둠 
+				// 그래서 혹시 게임 상태 표시 위치가 바뀌어도 그 함수에서 안바꿔도 되게.. 
 	Gotoxy(get_UI_Position_X(), (*ui_info).STATUS_Y_LEVEL = y); printf(" LEVEL : %5d", (*game_info).level);
 	Gotoxy(get_UI_Position_X(), (*ui_info).STATUS_Y_GOAL = y + 1); printf(" GOAL  : %5d", 10 - (*game_info).cnt);
 	Gotoxy(get_UI_Position_X(), y + 2); printf("+-  N E X T  -+ ");
@@ -464,37 +464,40 @@ int Non_Crush(int bx, int by, int b_rotation, int bType, Map_Info * map_info) { 
 	int i, j;
 
 	for (i = 0; i < 4; i++) {
-		for (j = 0; j < 4; j++) { //지정된 위치의 게임판과 블럭모양을 비교해서 겹치면 false를 리턴 
+		for (j = 0; j < 4; j++) {	// 지정된 위치의 게임판과 블럭모양을 비교해서 겹치면 false를 반환
 			if (blocks[bType][b_rotation][i][j] == EXISTING_BLOCK
 				&& Get_Map_Main(map_info, by + i, bx + j) > 0)
 				return false;
+			// 블록이 존재하는 좌표가 벽이나 고정된(이동이 완료된)블록을 만났으면 충돌하므로 false를 반환한다. 
 		}
 	}
-	return true; //하나도 안겹치면 true리턴 
+	return true; // 하나도 안겹치면 true를 반환 
 }
 
 void Move_Left(Block_Info * block_info, Map_Info * map_info)
 {
 	int i, j;
 
+	// 지역변수로 가져와 가독성을 높인다.
 	int b_type = (*block_info).b_type;
 	int b_rotation = (*block_info).b_rotation;
 	int by = (*block_info).by;
 	int bx = (*block_info).bx;
 
 	for (i = 0; i < 4; i++) { //현재좌표의 블럭을 지움 
-		for (j = 0; j < 4; j++) {
-			if (blocks[b_type][b_rotation][i][j] == EXISTING_BLOCK) // ★ blckos[b_type][b_rotation][i][j] == EXISTING_BLOCK 일때는 테트리스 블록이 있을 때이다.
-				Set_Map_Main(map_info, by + i, bx + j, EMPTY);
+		for (j = 0; j < 4; j++) 
+		{
+			if (blocks[b_type][b_rotation][i][j] == EXISTING_BLOCK) // 해당 좌표에 블럭이 있다면
+				Set_Map_Main(map_info, by + i, bx + j, EMPTY);		// 블럭을 지움
 		}
 	}
-	for (i = 0; i < 4; i++) { //왼쪽으로 한칸가서 active block을 찍음 
+	for (i = 0; i < 4; i++) { //왼쪽으로 한칸가서 새로운 블럭을 생성해준다
 		for (j = 0; j < 4; j++) {
-			if (blocks[b_type][b_rotation][i][j] == EXISTING_BLOCK)
-				Set_Map_Main(map_info, by + i, bx + j - 1, ACTIVE_BLOCK);
+			if (blocks[b_type][b_rotation][i][j] == EXISTING_BLOCK)			// 해당 좌표에 블럭이 있다면
+				Set_Map_Main(map_info, by + i, bx + j - 1, ACTIVE_BLOCK);	// 왼쪽으로 한칸 가서 새로운 블럭을 생성해준다.
 		}
 	}
-	(*block_info).bx--; //좌표값 이동 
+	(*block_info).bx--; // 블럭의 좌표값을 왼쪽으로 한칸 이동
 }
 
 void Move_Right(Block_Info * block_info, Map_Info * map_info)
@@ -506,19 +509,19 @@ void Move_Right(Block_Info * block_info, Map_Info * map_info)
 	int by = (*block_info).by;
 	int bx = (*block_info).bx;
 
-	for (i = 0; i < 4; i++) {
+	for (i = 0; i < 4; i++) { //현재좌표의 블럭을 지움 
 		for (j = 0; j < 4; j++) {
-			if (blocks[b_type][b_rotation][i][j] == EXISTING_BLOCK)
-				Set_Map_Main(map_info, by + i, bx + j, EMPTY);
+			if (blocks[b_type][b_rotation][i][j] == EXISTING_BLOCK) // 해당 좌표에 블럭이 있다면
+				Set_Map_Main(map_info, by + i, bx + j, EMPTY);		// 블럭을 지움
 		}
 	}
-	for (i = 0; i < 4; i++) {
+	for (i = 0; i < 4; i++) { // 오른쪽으로 한칸가서 새로운 블럭을 생성해준다
 		for (j = 0; j < 4; j++) {
-			if (blocks[b_type][b_rotation][i][j] == EXISTING_BLOCK)
-				Set_Map_Main(map_info, by + i, bx + j + 1, ACTIVE_BLOCK);
+			if (blocks[b_type][b_rotation][i][j] == EXISTING_BLOCK)			// 해당 좌표에 블럭이 있다면
+				Set_Map_Main(map_info, by + i, bx + j + 1, ACTIVE_BLOCK);	// 오른쪽으로 한간 가서 새로운 블럭을 생성해준다.
 		}
 	}
-	(*block_info).bx++;
+	(*block_info).bx++;	// 블럭의 좌표값을 오른쪽으로 한칸 이동
 }
 
 void Move_Up(Block_Info * block_info, Map_Info * map_info)
@@ -532,17 +535,17 @@ void Move_Up(Block_Info * block_info, Map_Info * map_info)
 
 	for (i = 0; i < 4; i++) { //현재좌표의 블럭을 지움  
 		for (j = 0; j < 4; j++) {
-			if (blocks[b_type][b_rotation][i][j] == EXISTING_BLOCK)
-				Set_Map_Main(map_info, by + i, bx + j, EMPTY);
+			if (blocks[b_type][b_rotation][i][j] == EXISTING_BLOCK)	// 해당 좌표에 블럭이 있다면
+				Set_Map_Main(map_info, by + i, bx + j, EMPTY);		// 블럭을 지움
 		}
 	}
-	(*block_info).b_rotation = ((*block_info).b_rotation + 1) % 4; //회전값을 1증가시킴(3에서 4가 되는 경우는 0으로 되돌림) 
+	(*block_info).b_rotation = ((*block_info).b_rotation + 1) % 4; // 회전값을 1증가시켜서 블럭을 회전함(3에서 4가 되는 경우는 0으로 되돌림) 
 	b_rotation = (*block_info).b_rotation;
 
-	for (i = 0; i < 4; i++) { //회전된 블록을 찍음 
+	for (i = 0; i < 4; i++) { //회전된 블록을 생성함
 		for (j = 0; j < 4; j++) {
-			if (blocks[b_type][b_rotation][i][j] == EXISTING_BLOCK)
-				Set_Map_Main(map_info, by + i, bx + j, ACTIVE_BLOCK);
+			if (blocks[b_type][b_rotation][i][j] == EXISTING_BLOCK)		// 해당 좌표에 회전된 블럭이 있다면
+				Set_Map_Main(map_info, by + i, bx + j, ACTIVE_BLOCK);	// 새로운 블럭을 생성해준다.
 		}
 	}
 }
@@ -556,19 +559,19 @@ void Move_Down(Block_Info * block_info, Map_Info * map_info)
 	int by = (*block_info).by;
 	int bx = (*block_info).bx;
 
-	for (i = 0; i < 4; i++) {
+	for (i = 0; i < 4; i++) { //현재좌표의 블럭을 지움  
 		for (j = 0; j < 4; j++) {
-			if (blocks[b_type][b_rotation][i][j] == EXISTING_BLOCK)
-				Set_Map_Main(map_info, by + i, bx + j, EMPTY);
+			if (blocks[b_type][b_rotation][i][j] == EXISTING_BLOCK)	// 해당 좌표에 블럭이 있다면
+				Set_Map_Main(map_info, by + i, bx + j, EMPTY);		// 블럭을 지움
 		}
 	}
 	for (i = 0; i < 4; i++) {
 		for (j = 0; j < 4; j++) {
-			if (blocks[b_type][b_rotation][i][j] == EXISTING_BLOCK)
-				Set_Map_Main(map_info, by + i + 1, bx + j, ACTIVE_BLOCK);
+			if (blocks[b_type][b_rotation][i][j] == EXISTING_BLOCK)			// 해당 좌표에 블럭이 있다면 
+				Set_Map_Main(map_info, by + i + 1, bx + j, ACTIVE_BLOCK);	// 아래로 한칸 가서 새로운 블럭을 생성한다
 		}
 	}
-	(*block_info).by++;
+	(*block_info).by++;	// 블럭의 좌표값을 아래로 한칸 이동
 }
 
 void Move_Bottom_Rotation(Block_Info * block_info, Map_Info * map_info)
@@ -582,20 +585,20 @@ void Move_Bottom_Rotation(Block_Info * block_info, Map_Info * map_info)
 
 	for (i = 0; i < 4; i++) {
 		for (j = 0; j < 4; j++) {
-			if (blocks[b_type][b_rotation][i][j] == EXISTING_BLOCK)
-				Set_Map_Main(map_info, by + i, bx + j, EMPTY);
+			if (blocks[b_type][b_rotation][i][j] == EXISTING_BLOCK)	// 해당 좌표에 블럭이 있다면
+				Set_Map_Main(map_info, by + i, bx + j, EMPTY);		// 블럭을 지움
 		}
 	}
-	(*block_info).b_rotation = ((*block_info).b_rotation + 1) % 4; //회전값을 1증가시킴(3에서 4가 되는 경우는 0으로 되돌림) 
+	(*block_info).b_rotation = ((*block_info).b_rotation + 1) % 4; // 회전값을 1증가시켜서 블럭을 회전함(3에서 4가 되는 경우는 0으로 되돌림)
 	b_rotation = (*block_info).b_rotation;
 
 	for (i = 0; i < 4; i++) {
 		for (j = 0; j < 4; j++) {
-			if (blocks[b_type][b_rotation][i][j] == EXISTING_BLOCK)
-				Set_Map_Main(map_info, by + i - 1, bx + j, ACTIVE_BLOCK);
+			if (blocks[b_type][b_rotation][i][j] == EXISTING_BLOCK)			// 해당 좌표에 회전된 블럭이 있다면
+				Set_Map_Main(map_info, by + i - 1, bx + j, ACTIVE_BLOCK);	// 한칸 위로가서 새로운 블럭을 생성한다.
 		}
 	}
-	(*block_info).by--;
+	(*block_info).by--;	// 지면이나 고정된 블록에 바로 닿으면 회전이 안되기 때문에 한칸 위로 올린다.
 }
 
 void Check_Line(Game_Info* game_info, Map_Info* map_info, Block_Info* block_info, UI_Info* ui_info) { //블록이 가득찼는지 검사하고 점수를 계산하는 함수
