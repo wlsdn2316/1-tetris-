@@ -366,13 +366,7 @@ void check_key(Game_Info * game_info, Block_Info * block_info, UI_Info * ui_info
 		else { //방향키가 아닌경우 
 			switch ((*game_info).key) {
 			case SPACE: //스페이스키 눌렀을때 
-				(*game_info).space_key_on = 1; //스페이스키 flag를 띄움 
-
-				while ((*game_info).crush_on == 0) { //바닥에 닿을때까지 이동시킴 
-					drop_block(game_info, block_info, map_info, ui_info);
-					(*game_info).score += (*game_info).level; // hard drop 보너스
-					gotoxy(get_UI_Position_X(), (*ui_info).STATUS_Y_SCORE); printf("        %6d", (*game_info).score); //점수 표시  
-				}
+				move_space(game_info, block_info, map_info, ui_info);
 				break;
 			case P: //P(대문자) 눌렀을때 
 			case p: //p(소문자) 눌렀을때 
